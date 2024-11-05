@@ -1,6 +1,7 @@
-from keras.layers import Conv2D
-from keras.layers import Activation
-from keras.models import Model
+import tensorflow as tf
+from tensorflow.python.keras.layers import Conv2D
+from tensorflow.python.keras.layers import Activation
+from tensorflow.python.keras.models import Model
 
 from .blocks import Transpose2D_block
 from .blocks import Upsample2D_block

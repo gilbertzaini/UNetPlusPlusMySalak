@@ -1,9 +1,9 @@
-tensorflow-gpu==1.4.1
-keras==2.2.2
+tensorflow
+keras
 pydot
 
 # Application wise
 simpleitk
 photutils
 tifffile
-libtiff
+# libtiff

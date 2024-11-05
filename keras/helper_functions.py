@@ -5,17 +5,17 @@
 
 import keras
 import tensorflow as tf
-from keras.models import Model
-from keras import backend as K
-from keras.layers import Input, merge, Conv2D, ZeroPadding2D, UpSampling2D, Dense, concatenate, Conv2DTranspose
-from keras.layers.pooling import MaxPooling2D, GlobalAveragePooling2D, MaxPooling2D
-from keras.layers.core import Dense, Dropout, Activation
-from keras.layers import BatchNormalization, Dropout, Flatten, Lambda
-from keras.layers.advanced_activations import ELU, LeakyReLU
-from keras.optimizers import Adam, RMSprop, SGD
-from keras.regularizers import l2
-from keras.layers.noise import GaussianDropout
-
+from tensorflow.keras.models import Model
+from tensorflow.keras import backend as K
+from tensorflow.keras.layers import (
+    Input, Conv2D, ZeroPadding2D, UpSampling2D, Dense, Conv2DTranspose,
+    MaxPooling2D, GlobalAveragePooling2D, Dropout, Activation, 
+    BatchNormalization, Flatten, Lambda, concatenate
+)
+from tensorflow.keras.layers import ELU, LeakyReLU  # For advanced activations
+from tensorflow.keras.optimizers import Adam, RMSprop, SGD
+from tensorflow.keras.regularizers import l2
+from tensorflow.keras.layers import GaussianDropout
 import numpy as np
 
 smooth = 1.
@@ -289,3 +289,75 @@ if __name__ == '__main__':
 
     model = UNetPlusPlus(96,96,1)
     model.summary()
+
+
+# new helper
+
+def obtain_input_shape(input_shape,
+                       default_size,
+                       min_size,
+                       data_format=None,
+                       require_flatten=True,
+                       weights=None):
+    """Determines the proper input shape for the model.
+    
+    Arguments:
+        input_shape: Optional shape tuple, only to be specified if `include_top` is False.
+        default_size: Default input width/height for the model.
+        min_size: Minimum input width/height accepted by the model.
+        data_format: Image data format to use (default is None to use `K.image_data_format()`).
+        require_flatten: Whether the model is expected to be flattened.
+        weights: Pretrained weights (None indicates random initialization).
+    
+    Returns:
+        An input shape tuple.
+    
+    Raises:
+        ValueError: In case of invalid argument values.
+    """
+    
+    if weights != 'imagenet' and input_shape and len(input_shape) == 3:
+        if data_format == 'channels_first':
+            if input_shape[0] is not None and input_shape[0] < min_size:
+                raise ValueError(f'Input size must be at least {min_size}x{min_size}; got {input_shape}')
+        else:
+            if input_shape[-1] is not None and input_shape[-1] < min_size:
+                raise ValueError(f'Input size must be at least {min_size}x{min_size}; got {input_shape}')
+        return input_shape
+    
+    if data_format is None:
+        data_format = K.image_data_format()
+    
+    if data_format == 'channels_first':
+        default_shape = (3, default_size, default_size)
+    else:
+        default_shape = (default_size, default_size, 3)
+    
+    if weights == 'imagenet' and require_flatten:
+        if input_shape is not None and input_shape != default_shape:
+            raise ValueError(f'Invalid input shape {input_shape} for weights "imagenet". '
+                             f'Expected shape {default_shape}.')
+        return default_shape
+    else:
+        if input_shape:
+            if data_format == 'channels_first':
+                if input_shape[0] != 3:
+                    raise ValueError(f'Invalid input shape {input_shape} for data format "channels_first".')
+            else:
+                if input_shape[-1] != 3:
+                    raise ValueError(f'Invalid input shape {input_shape} for data format "channels_last".')
+            return input_shape
+        else:
+            return default_shape
+        
+def get_batch_normalization():
+    if tf.executing_eagerly():
+        return tf.keras.layers.BatchNormalization
+    else:
+        # If using v1 behavior or manually configured TensorFlow 1.x behavior
+        return tf.compat.v1.keras.layers.BatchNormalization
+
+# Use `get_batch_normalization` to get the appropriate BatchNormalization layer
+def BatchNormalization():
+    BatchNormalization = get_batch_normalization()
+    return BatchNormalization

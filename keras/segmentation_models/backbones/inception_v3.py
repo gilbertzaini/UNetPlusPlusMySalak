@@ -24,23 +24,14 @@ from keras.layers import MaxPooling2D
 from keras.layers import AveragePooling2D
 from keras.layers import GlobalAveragePooling2D
 from keras.layers import GlobalMaxPooling2D
-from keras.engine.topology import get_source_inputs
-from keras.utils.data_utils import get_file
+from keras.utils import get_source_inputs
+from keras.utils import get_file
 from keras import backend as K
 from keras.applications import imagenet_utils
-
-import keras
-from distutils.version import StrictVersion
-
-if StrictVersion(keras.__version__) < StrictVersion('2.2.0'):
-    from keras.applications.imagenet_utils import _obtain_input_shape
-else:
-    from keras_applications.imagenet_utils import _obtain_input_shape
-
+from helper_functions import obtain_input_shape
 
 WEIGHTS_PATH = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.5/inception_v3_weights_tf_dim_ordering_tf_kernels.h5'
 WEIGHTS_PATH_NO_TOP = 'https://github.com/fchollet/deep-learning-models/releases/download/v0.5/inception_v3_weights_tf_dim_ordering_tf_kernels_notop.h5'
-
 
 def conv2d_bn(x,
               filters,
